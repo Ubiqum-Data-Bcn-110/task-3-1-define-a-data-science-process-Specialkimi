@@ -1,3 +1,4 @@
+library(lubridate)
 ####uploading dataset
 
 setwd("~/Desktop/tasks /M3T1")
@@ -16,3 +17,53 @@ View(dataframe1)
 dataframe1$DateTime <- strptime(dataframe1$DateTime, "%d/%m/%Y %H:%M:%S")
 dataframe1$Date <- as.Date(dataframe1$Date, "%d/%m/%Y")
 View(dataframe1)
+
+# We create a variable for Year
+dataframe1$Year <- year(dataframe1$DateTime)
+
+# We create a variable for month
+dataframe1$Month <- month(dataframe1$DateTime)
+dataframe1$Month <- factor(dataframe1$Month, levels = c(1:12),
+                           labels = c( "January", "February","March","April","May","June","July","August","September","October","November","December"))
+
+
+# We create a variable for day
+dataframe1$Day <- wday(dataframe1$DateTime)
+dataframe1$Day <- factor(dataframe1$Day, levels = c(1:7),labels = c("Sunday","Monday","Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"))
+
+# We create a variable for seasons
+dataframe1$Season <- "0"
+
+# We create a function to determine the season of the year from an input in "Date" format
+seasonfunc <- function(fecha) {
+  p <- 0
+  if ( "" < fecha < "") {
+     p <- "Spring"
+  }
+  if (  ""< fecha < "") {
+    p <- "Summer"
+  }  
+  if (  ""< fecha < "") {
+    p <- "Autum"
+  }  
+  if (  ""< fecha < "") {
+    p <- "Winter"
+  }
+  return(p)
+}
+
+seasonfunc(dataframe1[1,]$Date)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
