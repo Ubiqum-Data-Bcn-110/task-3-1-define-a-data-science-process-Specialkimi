@@ -35,24 +35,26 @@ dataframe1$Day <- factor(dataframe1$Day, levels = c(1:7),labels = c("Sunday","Mo
 dataframe1$Season <- "0"
 
 # We create a function to determine the season of the year from an input in "Date" format
-seasonfunc <- function(fecha) {
-  p <- 0
-  if ( "" < fecha < "") {
-     p <- "Spring"
+Seasonfunc <- function (fecha) {
+  p <- 0    
+   
+  if ( '2006-03-20 < fecha < 2006-06-20' ) {
+     p <-"Spring"
   }
-  if (  ""< fecha < "") {
+  if (" 2006-06-21"< fecha < "2006-09-21") {
     p <- "Summer"
   }  
-  if (  ""< fecha < "") {
+  if (  "2006-09-22" < fecha < "2006-12-22") {
     p <- "Autum"
   }  
-  if (  ""< fecha < "") {
+  if (  "2006-12-23" < fecha < "2007-03-19") {
     p <- "Winter"
   }
   return(p)
 }
+Seasonfunc(dataframe1[1,]$Date)
+print(dataframe1$Season)
 
-seasonfunc(dataframe1[1,]$Date)
 
 
 
