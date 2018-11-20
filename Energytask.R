@@ -55,16 +55,16 @@ Seasonfunc <- function(fecha) {
   p <- 0
   dia <- day(fecha)
   mes <- month(fecha)
-  if ( (mes = 3 & dia >= 20) | (mes %in% c(4,5)) | (mes = 6 & dia < 20) ) {
+  if ( (mes == 3 & dia >= 20) | (mes %in% c(4,5)) | (mes == 6 & dia < 20) ) {
     p <-"Spring"
   }
-  if ( (mes = 6 & dia >= 20) | (mes %in% c(7,8)) | (mes = 9 & dia < 20) ) {
+  if ( (mes == 6 & dia >= 20) | (mes %in% c(7,8)) | (mes == 9 & dia < 20) ) {
     p <-"Summer"
   }  
-  if ( (mes = 9 & dia >= 20) | (mes %in% c(10,11)) | (mes = 12 & dia < 20) ) {
+  if ( (mes == 9 & dia >= 20) | (mes %in% c(10,11)) | (mes == 12 & dia < 20) ) {
     p <-"Autum"
   }
-  if ( (mes = 12 & dia >= 20) | (mes %in% c(1,2)) | (mes = 3 & dia < 20) ) {
+  if ( (mes == 12 & dia >= 20) | (mes %in% c(1,2)) | (mes == 3 & dia < 20) ) {
     p <-"Winter"
   }  
   return(p)
