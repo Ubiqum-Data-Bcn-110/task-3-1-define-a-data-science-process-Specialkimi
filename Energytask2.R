@@ -14,12 +14,13 @@ library(reshape2)
 setwd("~/Desktop/tasks /M3T1")
 
 #### Loading ####
-Consumption <- read.csv("~/Desktop/tasks /M3T1/M3T1data.txt", row.names=1, sep=";",stringsAsFactors = T)
-Consumption <- as.data.frame(Consumption)
-
-
-
+Consumption <- read_delim("M3T1data.txt", 
+                          ";", escape_double = FALSE, col_types = cols(Time = col_character()), 
+                          trim_ws = TRUE)
 View(Consumption)
+
+Consumption <- read.csv("~/Desktop/tasks /M3T1/M3T1data.txt", sep=";",stringsAsFactors = F)
+Consumption <- as.data.frame(Consumption)
 
 for (i in 3:length(Consumption)) {
    Consumption[,i] <- as.double(Consumption[,i])
@@ -30,7 +31,8 @@ summary(Consumption)
 str(Consumption)
 
 ##### Create DateTime + new variables ####
-Consumption$DateTime<-dmy_hms(paste(Consumption$Date, Consumption$Time))
+Consumption$DateTime<-strptime(paste(Consumption$Date, Consumption$Time),"%d/%m/%Y %H:%M:%S")
+#Consumption$DateTime<-dmy_hms(paste(Consumption$Date, Consumption$Time))
 
 #### How many NAs ####
 prop.table(table(is.na(Consumption)))
@@ -73,22 +75,24 @@ Consumption$TotalConsumption <- Consumption$Global_active_power + Consumption$Gl
 #                                #group_by(Year, Month) %>% dplyr::summarise_all(sum)
 
 
+Consumption[,c("Sub_metering_1","Sub_metering_2","Sub_metering_3","Year","Month","TotalConsumption","Day")] %>% group_by(Year,Month) %>% summarise(media1=mean(Sub_metering_1,na.rm = T),media2=mean(Sub_metering_2,na.rm = T),media3=mean(Sub_metering_3,na.rm = T), media4=mean(TotalConsumption,na.rm=TRUE))
+                                                                                                                                                  
+Consumption_plot <- Consumption[,c("Sub_metering_1","Sub_metering_2","Sub_metering_3","Year","Month","TotalConsumption","Day")] %>% group_by(Year, Month ) %>% summarise(media=mean(Sub_metering_1,na.rm = T),media2=mean(Sub_metering_2,na.rm = T),media3=mean(Sub_metering_3,na.rm = T), media4=mean(TotalConsumption,na.rm=TRUE))
+
+
 
 ####Aggregated all years ####
 
 Agregate_all_years <- Consumption[,c("Sub_metering_1","Sub_metering_2","Sub_metering_3","Year","Month","TotalConsumption","Day")] %>% 
-  group_by( Year, Month) %>% summarise(sub1=sum(na.omit(Consumption$Sub_metering_1, na.rm=TRUE)),
-                                      sub2=sum(na.omit(Consumption$Sub_metering_2,na.rm=TRUE)),
-                                      sub3=sum(na.omit(Consumption$Sub_metering_3,na.rm=TRUE)),
-                                      tot=sum(na.omit((Consumption$TotalConsumption, na.rm=TRUE))))
++group_by(Year, Month) %>% summarise(sub1=sum(Consumption$Sub_metering_1,na.rm=TRUE),
+                                      sub2=sum(Consumption$Sub_metering_2,na.rm=TRUE),
+                                      sub3=sum(Consumption$Sub_metering_3,na.rm=TRUE),
+                                      tot=sum(Consumption$TotalConsumption,na.rm=TRUE))
 
 
-ggplot(data = Agregate_all_years, aes(x=Month)) + 
-  geom_point(aes(y=sub1,color="yellow")) + 
-  geom_point(aes(y=sub2,color="red")) + 
-  geom_point(aes(y=sub3,color="green")) +
-  geom_point(aes(y=tot, color="pink")) +
-  facet_grid(~Year)
+ggplot(data = Consumption_plot, aes(x=Month)) + geom_point(aes(y=media, color="sub1")) + geom_point(aes(y=media2, color="sub2")) + geom_point(aes(y=media3, color="sub3")) + geom_point(aes(y=media4, color="TC")) + facet_grid(~Year)
+
+
 
 total.ts = ts(Consumption$TotalConsumption, frequency = 4, start = c(2007,)
 plot(total.ts, col = "darkblue", lwd = 3, main = "Total energy consumption Time Series")
@@ -155,9 +159,9 @@ Agregate_all_years_2008 <- Consumption[year2008,c("Sub_metering_1","Sub_metering
                                       sub3_8=mean(na.omit(Consumption[year2008,]$Sub_metering_3)))
 
 ggplot(data = Agregate_all_years_2008, aes(x=Month)) + 
-  geom_point(aes(y=sub1_8,color="yellow")) + 
-  geom_point(aes(y=sub2_8,color="red")) + 
-  geom_point(aes(y=sub3_8,color="green")) + facet_grid(~Year)
+geom_point(aes(y=sub1_8,color="yellow")) + 
+geom_point(aes(y=sub2_8,color="red")) + 
+geom_point(aes(y=sub3_8,color="green")) + facet_grid(~Year)
 
 #### Aggregated 2009 ####
 year2009 <- which(Consumption$Year=="2009")
