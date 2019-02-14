@@ -43,6 +43,7 @@ apply(Consumption[,c(3:9)],2,function(x) sum(is.na(x)))
 Consumption$Year  <- year(Consumption$DateTime)
 Consumption$Month <- month(Consumption$DateTime,label = T,abbr = F)
 Consumption$Day   <- weekdays(Consumption$DateTim,abbreviate = F)
+Consumption$TotalConsumption <- Consumption$Global_active_power + Consumption$Global_reactive_power
 
 #barplot(table(Consumption2[rowSums(is.na(Consumption2)) >= 1 & rowSums(is.na(Consumption2)) < length(colnames(Consumption2))-1, 1]),
 #        ylab = "Amount of NA values" ,
@@ -75,24 +76,42 @@ Consumption$Day   <- weekdays(Consumption$DateTim,abbreviate = F)
 
 ####Aggregated all years ####
 
-Agregate_all_years <- Consumption[,c("Sub_metering_1","Sub_metering_2","Sub_metering_3","Year","Month","TotalConsumption")] %>% 
-  group_by(Year, Month) %>% summarise(sub1=mean(na.omit(Consumption$Sub_metering_1)),
-                                      sub2=mean(na.omit(Consumption$Sub_metering_2)),
-                                      sub3=mean(na.omit(Consumption$Sub_metering_3)),
-                                      tot=mean(na.omit((Consumption$TotalConsumption))))
+Agregate_all_years <- Consumption[,c("Sub_metering_1","Sub_metering_2","Sub_metering_3","Year","Month","TotalConsumption","Day")] %>% 
+  group_by( Year, Month) %>% summarise(sub1=sum(na.omit(Consumption$Sub_metering_1, na.rm=TRUE)),
+                                      sub2=sum(na.omit(Consumption$Sub_metering_2,na.rm=TRUE)),
+                                      sub3=sum(na.omit(Consumption$Sub_metering_3,na.rm=TRUE)),
+                                      tot=sum(na.omit((Consumption$TotalConsumption, na.rm=TRUE))))
 
 
 ggplot(data = Agregate_all_years, aes(x=Month)) + 
   geom_point(aes(y=sub1,color="yellow")) + 
   geom_point(aes(y=sub2,color="red")) + 
-  geom_point(aes(y=sub3,color="green")) + facet_grid(~Year)  
+  geom_point(aes(y=sub3,color="green")) +
+  geom_point(aes(y=tot, color="pink")) +
+  facet_grid(~Year)
 
 total.ts = ts(Consumption$TotalConsumption, frequency = 4, start = c(2007,)
 plot(total.ts, col = "darkblue", lwd = 3, main = "Total energy consumption Time Series")
 
-#### Aggregated all with total consumption #### 
+####Creating Train & Test Data Frames####
 
-Consumption$TotalConsumption <- Consumption$Global_active_power + Consumption$Global_reactive_power
+train_consumption = Consumption %>%
+filter
+year(2006) >= <year(2009)
+
+test_consumption  = Consumption  %>%
+  filter
+year = (2010)
+
+####Creating Train & Test Time Series - TOTAL CONSUMPTION####
+
+totCons.train.ts = ts(train_consumption$TotalConsumption, frequency = 12, start = 2006)
+totCons.test.ts = ts(test_consumption$TotalConsumption, frequency = 12, start = 2010)
+
+par(mfrow = c(2,1))
+plot(totCons.train.ts, col = "darkblue", lwd = 3, main = "Total energy consumption Time Series\nTraining set")
+plot(totCons.test.ts, col = "darkblue", lwd = 3, main = "Total energy consumption Time Series\nTest")
+
 
 
 
@@ -100,9 +119,9 @@ Consumption$TotalConsumption <- Consumption$Global_active_power + Consumption$Gl
 year2006 <- which(Consumption$Year=="2006")
 Agregate_all_years_2006 <- Consumption[year2006,c("Sub_metering_1","Sub_metering_2","Sub_metering_3","Year","Month")] %>% 
   group_by(Year, Month) %>% 
-  summarise(sub1_6=mean(na.omit(Consumption$Sub_metering_1)),
-            sub2_6=mean(na.omit(Consumption$Sub_metering_2)),
-            sub3_6=mean(na.omit(Consumption$Sub_metering_3)))
+  summarise(sub1_6=mean(na.omit(Consumption[year2006,]$Sub_metering_1)),
+            sub2_6=mean(na.omit(Consumption[year2006,]$Sub_metering_2)),
+            sub3_6=mean(na.omit(Consumption[year2006,]$Sub_metering_3)))
 
 ggplot(data = Agregate_all_years_2006, aes(x=Month)) + 
   geom_point(aes(y=sub1_6,color="yellow")) + 
@@ -113,12 +132,12 @@ total.ts = ts(df.mean$total_consump, frequency = 12, start = 2007)
 plot(, col = "darkblue", lwd = 3, main = "Total energy consumption Time Series")
 
 #### Aggregated 2007#### 
-
+year2007 <- which(Consumption$Year=="2007")
 Agregate_all_years_2007 <- Consumption[year2007,c("Sub_metering_1","Sub_metering_2","Sub_metering_3","Year","Month")] %>% 
   group_by(Year, Month) %>% 
-  summarise(sub1_7=mean(na.omit(Consumption$Sub_metering_1)),
-            sub2_7=mean(na.omit(Consumption$Sub_metering_2)),
-            sub3_7=mean(na.omit(Consumption$Sub_metering_3)))
+  summarise(sub1_7=mean(na.omit(Consumption[year2007,]$Sub_metering_1)),
+            sub2_7=mean(na.omit(Consumption[year2007,]$Sub_metering_2)),
+            sub3_7=mean(na.omit(Consumption[year2007,]$Sub_metering_3)))
 
 ggplot(data = Agregate_all_years_2007, aes(x=Month)) + 
   geom_point(aes(y=sub1_7,color="yellow")) + 
@@ -143,9 +162,9 @@ ggplot(data = Agregate_all_years_2008, aes(x=Month)) +
 #### Aggregated 2009 ####
 year2009 <- which(Consumption$Year=="2009")
 Agregate_all_years_2009 <- Consumption[year2009,c("Sub_metering_1","Sub_metering_2","Sub_metering_3","Year","Month")] %>% 
-  group_by(Year, Month) %>% summarise(sub1_9=mean(na.omit(Consumption$Sub_metering_1)),
-                                      sub2_9=mean(na.omit(Consumption$Sub_metering_2)),
-                                      sub3_9=mean(na.omit(Consumption$Sub_metering_3)))
+  group_by(Year, Month) %>% summarise(sub1_9=mean(na.omit(Consumption[year2009,]$Sub_metering_1)),
+                                      sub2_9=mean(na.omit(Consumption[year2009,]$Sub_metering_2)),
+                                      sub3_9=mean(na.omit(Consumption[year2009,]$Sub_metering_3)))
 
 ggplot(data = Agregate_all_years_2009, aes(x=Month)) + 
   geom_point(aes(y=sub1_9,color="yellow")) + 
